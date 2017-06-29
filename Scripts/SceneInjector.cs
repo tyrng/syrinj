@@ -15,11 +15,13 @@ namespace Syrinj
             Instance = this;
             DependencyContainer.Instance.Reset();
             InjectScene();
+
+			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
         }
 
-        void OnLevelWasLoaded()
+        void SceneManager_sceneLoaded (Scene scene, LoadSceneMode mode)
         {
-            InjectScene();
+			InjectScene();
         }
 
         public void InjectScene()
