@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Syrinj.Attributes;
 
 namespace Syrinj.Resolvers
 {
@@ -10,11 +7,13 @@ namespace Syrinj.Resolvers
     {
         public static readonly Dictionary<Type, IResolver> Default = new Dictionary<Type, IResolver>()
         {
+            {typeof (AnimatorStringHashAttribute),      new AnimatorStringHashResolver()},
+            {typeof (FindAttribute),                    new FindResolver()},
+            {typeof (FindObjectOfTypeAttribute),        new FindObjectOfTypeResolver()},
+            {typeof (FindRelativeAttribute),            new FindRelativeResolver()},
+            {typeof (FindWithTagAttribute),             new FindWithTagResolver()},
             {typeof (GetComponentAttribute),            new GetComponentResolver()},
             {typeof (GetComponentInChildrenAttribute),  new GetComponentInChildrenResolver()},
-            {typeof (FindAttribute),                    new FindResolver()},
-            {typeof (FindWithTagAttribute),             new FindWithTagResolver()},
-            {typeof (FindObjectOfTypeAttribute),        new FindObjectOfTypeResolver()},
         };
 
         public static readonly Dictionary<Type, IResolver> GetComponentResolvers = new Dictionary<Type, IResolver>()
