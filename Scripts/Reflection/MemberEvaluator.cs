@@ -11,11 +11,6 @@ namespace Syrinj.Reflection
 {
     public class MemberEvaluator
     {
-        private Dictionary<MemberInfo, IProvider> providers;
-        private Dictionary<MemberInfo, Injectable> dependentProviders;
-
-        private Dictionary<MemberInfo, Injectable> dependencies;
-
         private AttributeCache attributeCache;
         private DependencyMap dependencyMap;
 
