@@ -16,14 +16,11 @@ namespace Syrinj.Resolvers
             {
                 return null;
             }
-            else if (injectable.Type != typeof(GameObject))
+            if (injectable.Type != typeof(GameObject))
             {
                 return gameObject.GetComponent(injectable.Type);
             }
-            else
-            {
-                return gameObject;
-            }
+            return gameObject;
         }
     }
 }

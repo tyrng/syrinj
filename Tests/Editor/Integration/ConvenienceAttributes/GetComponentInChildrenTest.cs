@@ -124,12 +124,14 @@ namespace Syrinj.Tests.Integration.ConvenienceAttributes
         }
 
         [Test]
-        [ExpectedException(typeof(InjectionException))]
+        //[ExpectedException(typeof(InjectionException))]
         public void InjectNonMonoBehaviour()
         {
-            var obj = new NonMonoBehaviourTestClass();
-
-            DependencyContainer.Instance.Inject(obj);
+            Assert.Throws<InjectionException>(() =>
+            {
+                var obj = new NonMonoBehaviourTestClass();
+                DependencyContainer.Instance.Inject(obj);
+            });
         }
 
         [TearDown]

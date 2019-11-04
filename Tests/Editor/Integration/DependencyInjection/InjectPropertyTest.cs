@@ -92,11 +92,14 @@ namespace Syrinj.Tests.Integration.DependencyInjection
         }
 
         [Test]
-        [ExpectedException(typeof(InjectionException))]
-        public void BothInjectAndProvideIsInvalid() {
-            gameObject.AddComponent<InvalidInjectorProvider>();
-
-            new GameObjectInjector(gameObject).Inject();
+//        [ExpectedException(typeof(InjectionException))]
+        public void BothInjectAndProvideIsInvalid()
+        {
+            Assert.Throws<InjectionException>(() =>
+            {
+                gameObject.AddComponent<InvalidInjectorProvider>();
+                new GameObjectInjector(gameObject).Inject();
+            });
         }
 
         [TearDown]

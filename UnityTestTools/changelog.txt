@@ -1,3 +1,8 @@
+Version 1.5.9 (Updated by @brenoazevedo)
+* Updated to work with Unity 2019.1
+* Replaced obsolete ExpectedExceptionAttribute calls according to https://github.com/nunit/nunit/issues/799
+* Fixed obsolete Application.isWebPlayer and WebPlayer calls, now use WebGL instead
+
 Version 1.5.8
 
 - Bugfixes

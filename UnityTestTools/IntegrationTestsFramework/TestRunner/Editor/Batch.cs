@@ -68,7 +68,7 @@ namespace UnityTest
                 port = port
             };
 
-            if (Application.isWebPlayer)
+            if (Application.platform == RuntimePlatform.WebGLPlayer) //(Application.isWebPlayer)
             {
                 config.sendResultsOverNetwork = false;
                 Debug.Log("You can't use WebPlayer as active platform for running integration tests. Switching to Standalone");
