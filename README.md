@@ -122,7 +122,7 @@ public class GoodHomingMissile {
 }
 ```
 
-Make sense? That's dependency injection. The `GoodHomingMissile` has a dependency of a `Player` target, and the `RocketLauncher` tells it which target to move towards on construction! This is a good practice because you know that if a `GoodHomingMissile` is created, it must have had its target specified. 
+Makes sense? That's dependency injection. The `GoodHomingMissile` has a dependency of a `Player` target, and the `RocketLauncher` tells it which target to move towards on construction! This is a good practice because you know that if a `GoodHomingMissile` is created, it must have had its target specified. 
 
 If you're a Unity developer, you may already notice a slight issue. In Unity, you don't instantiate objects with constructors! Instead, you call `GameObject.Instantiate()`. One workaround is to make an `Initialize()` method:
 
@@ -205,6 +205,10 @@ public class ExampleProvider : MonoBehaviour
     [Provides]
     [FindObjectOfType(typeof(Canvas))]
     private Canvas UIRootProvider; // any convenience attribute can be combined with "Provides"
+    
+    [Provides]
+    [FindResourceOfType(typeof(GameData))]
+    private GameData _gameData; // Finds the first asset of type GameData in a 'Resources' folder within your project
 
     [Provides]
     public float RandomNumberProvider 
@@ -260,6 +264,7 @@ public class ExampleInjectee : MonoBehaviour
 | `[Find]`                   | `string GameObjectName`            | Finds a GameObject in scene with a given name. |
 | `[FindWithTag]`            | `string Tag`                       | Finds a GameObject in scene with a given tag. |
 | `[FindObjectOfType]`       | `System.Type ComponentType`        | Finds a component in the scene with a given type. |
+| `[FindResourceOfType]`     | `System.Type ComponentType`        | Finds the first asset of a given type in a 'Resources' folder |
 
 ##### Injection attributes:
 
