@@ -1,7 +1,7 @@
 # Syrinj
 ###### **Lightweight dependency injection** & convenient attributes for Unity
 
-### Updated to work with Unity 2019.1
+### Updated to work with Unity 2021.1
 
 ---
 
