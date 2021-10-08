@@ -40,8 +40,12 @@ namespace Syrinj
             Reset();
         }
 
+        private static int counter;
         public void Reset()
         {
+            counter++;
+            if(counter>1)
+                Debug.LogError(nameof(DependencyContainer)+ " called more than once");            
             dependencyMap = new DependencyMap();
             memberEvaluator = new MemberEvaluator(attributeCache, dependencyMap);
 
