@@ -11,13 +11,14 @@ namespace Syrinj.Resolvers
             var attribute = (FindResourceOfTypeAttribute)injectable.Attribute;
             if (attribute.ComponentType == null)
             {
-                var resources = Resources.FindObjectsOfTypeAll(injectable.Type);
+                //var resources = Resources.FindObjectsOfTypeAll(injectable.Type);
+                var resources =  Resources.LoadAll("", injectable.Type);
                 return resources?[0];
             }
             else
             {
-                var resources = Resources.FindObjectsOfTypeAll(attribute.ComponentType);
-                //  var resources =  Resources.LoadAll("", attribute.ComponentType).ToArray();
+                //var resources = Resources.FindObjectsOfTypeAll(attribute.ComponentType);
+                var resources =  Resources.LoadAll("", attribute.ComponentType); //.ToArray();
                 return resources?[0];
             }
         }
