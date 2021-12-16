@@ -75,6 +75,7 @@ namespace Syrinj.Graph
             if (injectable.Type != null && injectable.Type.IsSubclassOf(typeof(Provider)) && injectable.Tag == null)
             {
                 var key = new InjectionKey(injectable.Type, null);
+                if (providers.ContainsKey(key)) return;
                 var provider = ProviderFactory.CreateGeneric(injectable.Type);
                 providers.Add(key, provider);
             }
