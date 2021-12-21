@@ -71,6 +71,13 @@ namespace Syrinj
             TryInjectAll();
         }
 
+        public void Inject(ScriptableObject scriptableObject)
+        {
+            memberEvaluator.EvaluateMembers(scriptableObject);
+
+            TryInjectAll();
+        }
+
         public void Inject(object obj)
         {
             memberEvaluator.EvaluateMembers(obj);

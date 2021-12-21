@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Syrinj
@@ -10,7 +6,7 @@ namespace Syrinj
     public class SceneInjector : MonoBehaviour
     {
         public static SceneInjector Instance;
-
+        
         void Awake()
         {
             Instance = this;
@@ -20,21 +16,25 @@ namespace Syrinj
 			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
         }
 
-        void SceneManager_sceneLoaded (Scene scene, LoadSceneMode mode)
+        void OnDestroy()
         {
-			InjectScene();
+            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+        }
+
+        void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name == gameObject.scene.name) InjectScene();
         }
 
         public void InjectScene()
         {
             var behaviours = GetAllBehavioursInScene();
-
             InjectBehaviours(behaviours);
         }
 
-        private MonoBehaviour[] GetAllBehavioursInScene()
+        protected virtual MonoBehaviour[] GetAllBehavioursInScene()
         {
-            return GameObject.FindObjectsOfType<MonoBehaviour>();
+            return ObjectExtensions.FindMonoBehavioursOfType<MonoBehaviour>(gameObject.scene.name);
         }
 
         private void InjectBehaviours(MonoBehaviour[] behaviours)

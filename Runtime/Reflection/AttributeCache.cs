@@ -89,7 +89,7 @@ namespace Syrinj.Reflection
 
         private static BindingFlags ValidBindingFlags()
         {
-            return BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            return BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         }
 
         private static bool Filter(MemberInfo m, object filtercriteria)

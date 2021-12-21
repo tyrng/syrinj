@@ -11,12 +11,7 @@ namespace Syrinj
         private readonly GameObject gameObject;
         private readonly bool injectChildren;
 
-        public GameObjectInjector(GameObject gameObject) : this(gameObject, false)
-        {
-
-        }
-
-        public GameObjectInjector(GameObject gameObject, bool injectChildren) 
+        public GameObjectInjector(GameObject gameObject, bool injectChildren = false) 
         {
             this.gameObject = gameObject;
             this.injectChildren = injectChildren;
@@ -51,7 +46,7 @@ namespace Syrinj
         {
             if (injectChildren)
             {
-                return gameObject.GetComponentsInChildren<MonoBehaviour>();
+                return gameObject.GetComponentsInChildren<MonoBehaviour>(includeInactive: true);
             }
             else
             {
