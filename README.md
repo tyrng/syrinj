@@ -261,19 +261,19 @@ public class ExampleInjectee : MonoBehaviour
 | -------------------------- | ---------------------------------- | ---------------------------------------- |
 | `[GetComponent]`           | *opt.* `System.Type ComponentType` | Gets a component attached to this GameObject. |
 | `[GetComponentInChildren]` | *opt.* `System.Type ComponentType` | Gets a component attached to this GameObject or its children. |
-| `[Find]`                   | `string GameObjectName`            | Finds a GameObject in scene with a given name. |
-| `[FindWithTag]`            | `string Tag`                       | Finds a GameObject in scene with a given tag. |
+| `[Find]`                   | `string GameObjectName`            | Finds a GameObject in scene with a given name. Can also return a component. |
+| `[FindWithTag]`            | `string Tag`                       | Finds a GameObject in scene with a given tag. Can also return a component. |
 | `[FindObjectOfType]`       | `System.Type ComponentType`        | Finds a component in the scene with a given type. |
 | `[FindResourceOfType]`     | `System.Type ComponentType`        | Finds the first asset of a given type in a 'Resources' folder |
 
 ##### Injection attributes:
 
-| Attribute     | Arguments           | Usage                                    |
-| ------------- | ------------------- | ---------------------------------------- |
-| `[Provides]`  | *opt.* `string Tag` | Registers a provider for a given tag and type. |
-| `[Inject]`    | *opt.* `string Tag` | Injects a field/property for a given tag and type. |
-| `[Instance]`  | *none*              | Attach to `[Provides]` to construct a new instance at every injection. |
-| `[Singleton]` | *none*              | Attach to `[Provides]` to construct a singleton instance shared across injections. |
+| Attribute     | Arguments                                     | Usage                                    |
+| ------------- | -------------------                           | ---------------------------------------- |
+| `[Provides]`  | *opt.* `string Tag`                           | Registers a provider for a given tag and type. |
+| `[Inject]`    | *opt.* `string Tag`                           | Injects a field/property for a given tag and type. |
+| `[Instance]`  | *none*                                        | Attach to `[Provides]` to construct a new instance at every injection. |
+| `[Singleton]` | *opt.* `SingletonOptions SingletonOptions`    | Attach to `[Provides]` to construct a singleton instance shared across injections. |
 
 ##### Classes
 
@@ -283,7 +283,9 @@ public class ExampleInjectee : MonoBehaviour
 
 ## Notes
 
-- Currently only active GameObjects are injected with [Inject] or the convenience attributes.
+- With SceneInjector, only active GameObjects are injected with [Inject] or the convenience attributes.
+- SceneInjector only injects to the scene it is in (for multiscene support).
+- SceneRootInjector supports injection to inactive gameobjects, but must be root of other gameobjects.
 
 ## Troubleshooting
 
@@ -294,12 +296,46 @@ A: Follow these steps in order:
 
 1. Make sure there the `[Inject]` attribute is on the proper injected field, and the `[Provides]` attribute is on the proper provider field. Ensure both are bound to the exact same `Tag` (or lack thereof) and `Type`.
 
-2. Your injecting/providing GameObjects must have `InjectorComponent`s attached (if created with `GameObject.Instiantiate()`) and/or a `SceneInjector` component must exist *somewhere* in the scene (if object exists in the scene initially).
+2. Your injecting/providing GameObjects must have `InjectorComponent`s attached (if created with `GameObject.Instiantiate()`) and/or a `SceneInjector`/`SceneRootInjector` component must exist *somewhere* in the scene (if object exists in the scene initially).
 
 3. For every object that you call `GameObject.Instantiate()` on, you should have at most ONE `InjectorComponent`. Place this component at the root GameObject, with `ShouldInjectChildren` set if necessary. 
 
-4. Make sure the fields or property providers aren't null! Use `Debug.Log()` and/or double-check the inspector for the object.
+4. `RuntimeInjectableMonoBehaviour` and `RuntimeInjectableScriptableObject` can be used as base class of components that are created on runtime. Personally, I created similar classes
+but instead of injecting during Awake(), a custom DoConstruct() function is created and will perform injection before I call the 'Constructor'. For example:
+```
+public abstract class CustomRuntimeInjectableMonoBehaviour: MonoBehaviour
+{
+    public bool isConstructed { get; private set; }
 
-5. Verify the script execution order in Unity. Go to `Edit -> Project Settings -> Script Execution Order` and modify the `Syrinj.InjectorComponent` and `Syrinj.SceneInjcetor` scripts to execute **before** all other scripts. Put in a large negative number such that these two scripts before any others in the list.
+    protected void DoConstruct(Action constructMethod = null)
+    {
+        if (isConstructed)
+        {
+            V1Debug.LogError("Cannot Construct twice!");
+            return;
+        }
+        new GameObjectInjector(gameObject).Inject();
+        constructMethod?.Invoke();
+        isConstructed = true;
+    }
+}
 
-6. There might be some other problem. Create an issue on GitHub/[message me](https://twitter.com/perceptron)/fix it yourself with a pull request!
+public class SomeScript: CustomRuntimeInjectableMonoBehaviour
+{
+    int helloNum;
+
+    public SomeScript Construct(int helloNum)
+    {
+        DoConstruct(() => {
+            this.helloNum = helloNum
+        });
+        return this;
+    }
+}
+```
+
+5. Make sure the fields or property providers aren't null! Use `Debug.Log()` and/or double-check the inspector for the object.
+
+6. Verify the script execution order in Unity. Go to `Edit -> Project Settings -> Script Execution Order` and modify the `Syrinj.InjectorComponent` and `Syrinj.SceneInjcetor` scripts to execute **before** all other scripts. Put in a large negative number such that these two scripts before any others in the list.
+
+7. There might be some other problem. Create an issue on GitHub/[message me](https://twitter.com/perceptron)/fix it yourself with a pull request!
