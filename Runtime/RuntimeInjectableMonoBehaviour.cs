@@ -2,7 +2,7 @@
 
 namespace Syrinj
 {
-    public class RuntimeInjectableMonoBehaviour : MonoBehaviour 
+    public abstract class RuntimeInjectableMonoBehaviour : MonoBehaviour 
     {
         protected virtual void Awake()
         {

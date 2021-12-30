@@ -12,6 +12,7 @@ namespace Syrinj.Reflection
         private readonly HashSet<MemberInfo> cachedMembers;
         private readonly Dictionary<MemberInfo, List<UnityInjectorAttribute>> injectorAttributes;
         private readonly Dictionary<MemberInfo, List<UnityProviderAttribute>> providerAttributes;
+        private readonly Dictionary<MemberInfo, List<UnityDependencyAttribute>> nonLazySingletonAttributes;
 
         public AttributeCache()
         {
@@ -19,6 +20,7 @@ namespace Syrinj.Reflection
             cachedMembers = new HashSet<MemberInfo>();
             injectorAttributes = new Dictionary<MemberInfo, List<UnityInjectorAttribute>>();
             providerAttributes = new Dictionary<MemberInfo, List<UnityProviderAttribute>>();
+            nonLazySingletonAttributes = new Dictionary<MemberInfo, List<UnityDependencyAttribute>>();
         }
 
         public List<UnityInjectorAttribute> GetInjectorAttributesForMember(MemberInfo info)
@@ -42,6 +44,20 @@ namespace Syrinj.Reflection
             if (providerAttributes.ContainsKey(info))
             {
                 return providerAttributes[info];
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        public List<UnityDependencyAttribute> GetNonLazySingletonAttributesForMember(MemberInfo info)
+        {
+            //TryCacheMember(info);
+
+            if (nonLazySingletonAttributes.ContainsKey(info))
+            {
+                return nonLazySingletonAttributes[info];
             }
             else
             {
@@ -136,6 +152,10 @@ namespace Syrinj.Reflection
             else if (IsProviderAttribute(attribute))
             {
                 CacheProviderAttribute(info, (UnityProviderAttribute) attribute);
+                if (IsNonLazySingletonAttribute(attribute))
+                {
+                    CacheNonLazySingletonAttribute(info, (SingletonAttribute) attribute);
+                }
             }
         }
 
@@ -164,7 +184,23 @@ namespace Syrinj.Reflection
             {
                 providerAttributes.Add(info, new List<UnityProviderAttribute>());
             }
+
             providerAttributes[info].Add(attribute);
+        }
+
+        private static bool IsNonLazySingletonAttribute(Attribute attribute)
+        {
+            return attribute.GetType().IsAssignableFrom(typeof(SingletonAttribute)) &&
+                   ((SingletonAttribute)attribute).SingletonOptions == SingletonOptions.NonLazy;
+        }
+
+        private void CacheNonLazySingletonAttribute(MemberInfo info, SingletonAttribute attribute)
+        {
+            if (!nonLazySingletonAttributes.ContainsKey(info))
+            {
+                nonLazySingletonAttributes.Add(info, new List<UnityDependencyAttribute>());
+            }
+            nonLazySingletonAttributes[info].Add(attribute);
         }
     }
 }

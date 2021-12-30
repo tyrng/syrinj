@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Collections.Generic;
-
 using Syrinj.Attributes;
 
 namespace Syrinj.Provision
@@ -13,6 +12,7 @@ namespace Syrinj.Provision
             public string Tag;
             public bool IsValid;
             public bool IsSingleton;
+            public bool IsLazySingleton;
             public bool IsInstance;
         }
 
@@ -54,14 +54,19 @@ namespace Syrinj.Provision
                     data.Tag = provides.Tag;
                     data.IsValid = true;
                     continue;
-                }
+                } 
 
                 var isSingleton = IsSingleton(attribute);
                 if (isSingleton)
                 {
                     data.IsSingleton = true;
+                    var isLazySingleton = IsLazySingleton(attribute);
+                    if (isLazySingleton)
+                    {
+                        data.IsLazySingleton = true;
+                    }  
                     continue;
-                }  
+                } 
 
                 var isInstance = IsInstance(attribute);
                 if (isInstance)
@@ -81,6 +86,11 @@ namespace Syrinj.Provision
         private static bool IsSingleton(UnityProviderAttribute attribute)
         {
             return attribute is SingletonAttribute;
+        }
+
+        private static bool IsLazySingleton(UnityProviderAttribute attribute)
+        {
+            return attribute is SingletonAttribute singletonAttribute && singletonAttribute.SingletonOptions == SingletonOptions.Lazy;
         }
 
         private static bool IsInstance(UnityProviderAttribute attribute)
@@ -119,7 +129,7 @@ namespace Syrinj.Provision
         private static IProvider GetInstantiatingProvider(Type type, ProviderData data) {
             if (data.IsSingleton)
             {
-                return new SingletonProvider(type, data.Tag);
+                return new SingletonProvider(type, data.Tag, data.IsLazySingleton);
             }
             else if (data.IsInstance)
             {

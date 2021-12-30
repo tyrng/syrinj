@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using Syrinj.Attributes;
 using Syrinj.Exceptions;
 using Syrinj.Graph;
 using Syrinj.Injection;
 using Syrinj.Provision;
-using UnityEngine;
 
 namespace Syrinj.Reflection
 {
@@ -37,7 +35,7 @@ namespace Syrinj.Reflection
 
         private void EvaluateMemberAttributes(MemberInfo info, object obj)
         {
-            var injectable = GetInjectableAttribute(info, obj);
+            var injectable = GetInjectableAttribute(info, obj) ?? GetNonLazySingletonAttribute(info, obj);
             var provider = GetProviderAttribute(info, obj);
 
             EvaluateAttributes(info, injectable, provider);
@@ -61,6 +59,15 @@ namespace Syrinj.Reflection
             return ProviderFactory.Create(info, obj, attributes);
         }
 
+        private Injectable GetNonLazySingletonAttribute(MemberInfo info, object obj)
+        {
+            var attributes = attributeCache.GetNonLazySingletonAttributesForMember(info);
+
+            if (attributes == null || attributes.Count == 0) return null;
+            
+            return InjectableFactory.Create(info, obj, attributes[0]);
+        }
+
         private void EvaluateAttributes(MemberInfo info, Injectable injectable, IProvider provider)
         {
             if (injectable != null && provider != null)
@@ -79,11 +86,16 @@ namespace Syrinj.Reflection
 
         private void EvaluateInjectableProvider(Injectable injectable, IProvider provider)
         {
-            dependencyMap.RegisterProvider(injectable.Type, injectable.Tag, provider);
+            EvaluateProvider(provider);
 
             if (injectable.Attribute is UnityConvenienceAttribute)
             {
                 dependencyMap.RegisterResolvableDependent(injectable);
+            }
+            else if (injectable.Attribute is SingletonAttribute singletonAttribute &&
+                     singletonAttribute.SingletonOptions == SingletonOptions.NonLazy)
+            {
+                dependencyMap.RegisterProvidableDependent(injectable);
             }
             else
             {

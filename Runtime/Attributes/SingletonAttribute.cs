@@ -4,9 +4,10 @@ namespace Syrinj
 {
     public class SingletonAttribute : UnityProviderAttribute
     {
-        public SingletonAttribute()
+        public readonly SingletonOptions SingletonOptions;
+        public SingletonAttribute(SingletonOptions singletonOptions = SingletonOptions.NonLazy)
         {
-            
+            SingletonOptions = singletonOptions;
         }
     }
 }

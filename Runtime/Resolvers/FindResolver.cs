@@ -1,5 +1,4 @@
-﻿using Syrinj.Attributes;
-using Syrinj.Injection;
+﻿using Syrinj.Injection;
 using UnityEngine;
 
 namespace Syrinj.Resolvers

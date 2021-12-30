@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Syrinj
 {
-    public class RuntimeInjectableScriptableObject : ScriptableObject 
+    public abstract class RuntimeInjectableScriptableObject : ScriptableObject 
     {
         protected virtual void Awake()
         {

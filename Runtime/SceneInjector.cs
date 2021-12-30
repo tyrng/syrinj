@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Syrinj
@@ -12,8 +13,11 @@ namespace Syrinj
             Instance = this;
             DependencyContainer.Instance.Reset();
             InjectScene();
+        }
 
-			SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+        void Start()
+        {
+            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
         }
 
         void OnDestroy()

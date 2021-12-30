@@ -14,9 +14,9 @@ namespace Syrinj.Injection
         public static Injectable Create(MemberInfo info, object obj, UnityDependencyAttribute attribute)
         {
             string tag = null;
-            if (attribute is InjectAttribute)
+            if (attribute is InjectAttribute injectAttribute)
             {
-                tag = ((InjectAttribute) attribute).Tag;
+                tag = injectAttribute.Tag;
             }
 
             if (info.MemberType == MemberTypes.Property)
