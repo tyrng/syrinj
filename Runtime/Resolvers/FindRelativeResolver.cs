@@ -12,18 +12,11 @@ namespace Syrinj.Resolvers
             var parent = ((MonoBehaviour)injectable.Object).transform;
             var transform = parent.FindRelativePath(name);
 
-            if (transform == null)
-            {
-                return null;
-            }
-            else if (injectable.Type.IsAssignableFrom(transform.GetType()))
-            {
-                return transform;
-            }
-            else
-            {
-                return transform.GetComponent(injectable.Type);
-            }
+            if (transform == null) return null;
+
+            return typeof(Transform).IsAssignableFrom(injectable.Type)
+                ? transform
+                : transform.GetComponent(injectable.Type);
         }
     }
 }

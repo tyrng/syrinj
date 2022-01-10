@@ -1,6 +1,4 @@
-﻿using Syrinj.Attributes;
-using Syrinj.Injection;
-using UnityEngine;
+﻿using Syrinj.Injection;
 
 namespace Syrinj.Resolvers
 {
@@ -11,11 +9,11 @@ namespace Syrinj.Resolvers
             var attribute = (FindObjectOfTypeAttribute)injectable.Attribute;
             if (attribute.ComponentType == null)
             {
-                return Object.FindObjectOfType(injectable.Type);
+                return ObjectExtensions.FindMonoBehaviourOfType(injectable.Type, includeInactive: true);
             }
             else
             {
-                return Object.FindObjectOfType(attribute.ComponentType);
+                return ObjectExtensions.FindMonoBehaviourOfType(attribute.ComponentType, includeInactive: true);
             }
         }
     }

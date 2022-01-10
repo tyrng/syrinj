@@ -47,6 +47,9 @@ namespace Syrinj
 
             RegisterDefaultDependencyResolvers();
             GameObjectInjector.ResetVisited();
+            ScriptableObjectInjector.ResetVisited();
+            ObjectInjector.ResetVisited();
+            SerializableObjectInjector.ResetVisited();
         }
 
         private void RegisterDefaultDependencyResolvers()
@@ -74,6 +77,16 @@ namespace Syrinj
         public void Inject(ScriptableObject scriptableObject)
         {
             memberEvaluator.EvaluateMembers(scriptableObject);
+
+            TryInjectAll();
+        }
+
+        public void Inject(IList<ScriptableObject> scriptableObjects)
+        {
+            for (int i = 0; i < scriptableObjects.Count; i++)
+            {
+                memberEvaluator.EvaluateMembers(scriptableObjects[i]);
+            }
 
             TryInjectAll();
         }

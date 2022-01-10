@@ -1,7 +1,7 @@
 # Syrinj
 ###### **Lightweight dependency injection** & convenient attributes for Unity
 
-### Updated to work with Unity 2021.1
+### Updated to work with Unity 2019.4
 
 ---
 
@@ -40,7 +40,7 @@ public class SceneProviders : MonoBehaviour
     public Light SunProvider; // drag object in inspector to set
 
     [Provides]
-    [FindObjectOfType(typeof(Player))]
+    [FindObjectOfType]
     public Player PlayerProvider; // provides Player object from scene
 }
 
@@ -67,19 +67,65 @@ public class SimpleBehaviour : MonoBehaviour
 
 Create a GameObject in your scene with the Component `SceneInjector`. 
 
-**For injection while application is running:**
+**For providing MonoBehaviours:**
 
-Attach the `InjectorComponent` to any GameObject which contains providers and injectors. 
-
-Set the `ShouldInjectChildren` property in the inspector if you wish to inject children of the GameObject as well. DO NOT attach another InjectorComponent to those children. There should be only one root `InjectorComponent` for an object created with `GameObject.Instantiate()`.
+Add `[Provides]` and the required [convenience attributes](#convenience-attributes) to a field/property declaration.
 
 **For providing non-MonoBehaviours:**
 
 Add `[Instance]` or `[Singleton]` attributes to providers of non-MonoBehaviours. These will construct new instances or a shared single instance, respectively, at injection sites. 
 
-**For injecting non-MonoBehaviours:**
+**For injecting both MonoBehaviours and non-MonoBehaviours:**
 
-Inject a `Provider<T>` if you wish to create your own injected objects. `T` is the object you wish to create, and must be a non-MonoBehaviour with a default constructor. Then call `Get()` on the provider for a new instance.
+Add `[Inject]` to a field/property declaration.
+
+**For injection of MonoBehaviours while application is running:**
+
+***Method 1:***
+
+Instead of using `Instantiate()` or `CreateInstance()` to create new instances of MonoBehaviours or ScriptableObjects, set parent class of the instantiator class to `MonoClonable` (`DataClonable` for ScriptableObjects) and use `Clone()` or use `ObjectExtensions.Clone()` directly.
+
+For instance:
+
+```csharp
+public class BulletFactory : MonoClonable
+{
+    public Bullet BulletPrefab; // drag from inspector
+
+    private void Update()
+    {
+        Clone(BulletPrefab)
+    }
+}
+
+public class Bullet : MonoBehaviour
+{
+    [Inject]
+    private AudioController AudioController { get; set; } // this will be injected upon 'cloning'
+
+    ...
+}
+```
+
+***Method 2:***
+
+Attach the `InjectorComponent` to any GameObject which contains providers and injectors. 
+
+Set the `ShouldInjectChildren` property in the inspector if you wish to inject children of the GameObject as well. DO NOT attach another InjectorComponent to those children. There should be only one root `InjectorComponent` for an object created with `GameObject.Instantiate()`.
+
+**For injection of non-MonoBehaviours while application is running:**
+
+There are two kinds of non-MonoBehaviours.
+
+For plain C-sharp objects that are instantiated with the `new` keyword (considered not serializable by Unity): Set parent class to `InjectableObject` and use as usual.
+
+For non-MonoBehaviours that are instantiated by the Unity engine (considered serializable by Unity): Set parent class to `InjectableSerializableObject` and use as usual.
+
+The difference between non-MonoBehaviours that are serializable and not serializable by Unity is the former is either a class that implements an interface with `[SerializedReference]` being used on the field, or a `[Serializable]` class that has its fields set in the inspector, while the latter is just a plain C-sharp object that needs to be instantiated with a `new` keyword (the former doesn't).
+
+**To inject instances of non-MonoBehaviours without a provider class:**
+
+Inject a `Provider<T>` if you wish to create your own injected objects. `T` is the object you wish to create, and must be a non-MonoBehaviour with a default constructor. Then call `Get()` on the provider for a new instance. This kind of injection does not need the object to be an `InjectableObject`.
 
 ---
 
@@ -283,9 +329,7 @@ public class ExampleInjectee : MonoBehaviour
 
 ## Notes
 
-- With SceneInjector, only active GameObjects are injected with [Inject] or the convenience attributes.
-- SceneInjector only injects to the scene it is in (for multiscene support).
-- SceneRootInjector supports injection to inactive gameobjects, but must be root of other gameobjects.
+- None for now.
 
 ## Troubleshooting
 
@@ -294,48 +338,22 @@ public class ExampleInjectee : MonoBehaviour
 
 A: Follow these steps in order:
 
+1. `SceneInjector` component must exist *somewhere* in the scene (if object exists in the scene initially).
+
 1. Make sure there the `[Inject]` attribute is on the proper injected field, and the `[Provides]` attribute is on the proper provider field. Ensure both are bound to the exact same `Tag` (or lack thereof) and `Type`.
 
-2. Your injecting/providing GameObjects must have `InjectorComponent`s attached (if created with `GameObject.Instiantiate()`) and/or a `SceneInjector`/`SceneRootInjector` component must exist *somewhere* in the scene (if object exists in the scene initially).
+1. For runtime-injection, if you use Method 1:
 
-3. For every object that you call `GameObject.Instantiate()` on, you should have at most ONE `InjectorComponent`. Place this component at the root GameObject, with `ShouldInjectChildren` set if necessary. 
+    - Make sure you are using `Clone()` instead of `Instantiate()` for MonoBehaviours.
+    - Make sure you have set the parent class of non-MonoBehaviour to either `InjectableObject` or `InjectableSerializableObject`, refer [Set-up](#set-up) for more information.
 
-4. `RuntimeInjectableMonoBehaviour` and `RuntimeInjectableScriptableObject` can be used as base class of components that are created on runtime. Personally, I created similar classes
-but instead of injecting during Awake(), a custom DoConstruct() function is created and will perform injection before I call the 'Constructor'. For example:
-```
-public abstract class CustomRuntimeInjectableMonoBehaviour: MonoBehaviour
-{
-    public bool isConstructed { get; private set; }
+1. For runtime-injection, if you use Method 2:
 
-    protected void DoConstruct(Action constructMethod = null)
-    {
-        if (isConstructed)
-        {
-            V1Debug.LogError("Cannot Construct twice!");
-            return;
-        }
-        new GameObjectInjector(gameObject).Inject();
-        constructMethod?.Invoke();
-        isConstructed = true;
-    }
-}
+    - Your injecting/providing GameObjects must have `InjectorComponent`s attached (if created with `GameObject.Instiantiate()`).
+    - For every object that you call `GameObject.Instantiate()` on, you should have at most ONE `InjectorComponent`. Place this component at the root GameObject, with `ShouldInjectChildren` set if necessary. 
 
-public class SomeScript: CustomRuntimeInjectableMonoBehaviour
-{
-    int helloNum;
+1. Make sure the fields or property providers aren't null! Use `Debug.Log()` and/or double-check the inspector for the object.
 
-    public SomeScript Construct(int helloNum)
-    {
-        DoConstruct(() => {
-            this.helloNum = helloNum
-        });
-        return this;
-    }
-}
-```
+1. Verify the script execution order in Unity. Go to `Edit -> Project Settings -> Script Execution Order` and modify the `Syrinj.InjectorComponent` and `Syrinj.SceneInjector` scripts to execute **before** all other scripts. Put in a large negative number such that these two scripts before any others in the list.
 
-5. Make sure the fields or property providers aren't null! Use `Debug.Log()` and/or double-check the inspector for the object.
-
-6. Verify the script execution order in Unity. Go to `Edit -> Project Settings -> Script Execution Order` and modify the `Syrinj.InjectorComponent` and `Syrinj.SceneInjcetor` scripts to execute **before** all other scripts. Put in a large negative number such that these two scripts before any others in the list.
-
-7. There might be some other problem. Create an issue on GitHub/[message me](https://twitter.com/perceptron)/fix it yourself with a pull request!
+1. There might be some other problem. Create an issue on GitHub/[message me](https://twitter.com/perceptron)/fix it yourself with a pull request!

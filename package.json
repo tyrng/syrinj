@@ -1,8 +1,8 @@
 {
   "name": "com.tyrng.syrinj",
   "displayName": "Syrinj",
-  "version": "1.2.6",
-  "unity": "2019.1",
+  "version": "1.3.0",
+  "unity": "2019.4",
   "description": "Lightweight dependency injection & convenience attributes for Unity.",
   "keywords": [
     "Dependency Injection",
